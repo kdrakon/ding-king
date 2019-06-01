@@ -112,19 +112,19 @@ impl serde::ser::Serialize for BigFiveResults<'_> {
     }
 }
 
-trait BigFiveResultsTextToHash {
-    fn to_h(&self) -> Result<String, serde_json::Error>;
+pub trait BigFiveResultsTextToHash {
+    fn to_h(&self) -> Result<serde_json::Value, serde_json::Error>;
 }
 
 impl BigFiveResultsTextToHash for BigFiveResult<'_> {
-    fn to_h(&self) -> Result<String, serde_json::Error> {
-        serde_json::to_string(self)
+    fn to_h(&self) -> Result<serde_json::Value, serde_json::Error> {
+        serde_json::to_value(self)
     }
 }
 
 impl BigFiveResultsTextToHash for BigFiveResults<'_> {
-    fn to_h(&self) -> Result<String, serde_json::Error> {
-        serde_json::to_string(self)
+    fn to_h(&self) -> Result<serde_json::Value, serde_json::Error> {
+        serde_json::to_value(self)
     }
 }
 
@@ -192,12 +192,12 @@ Sympathy........73
     #[test]
     fn test_to_h() {
         let result = big_five_results_text_serializer::new("Sean", TEST_INPUT_1).unwrap();
-        let json = result.to_h().unwrap();
+        let json = result.to_h().and_then(|r| serde_json::to_string(&r)).unwrap();
         assert_eq!(json, "{\"EXTRAVERSION\":{\"Facets\":{\"Activity Level\":18,\"Assertiveness\":44,\"Cheerfulness\":57,\"Excitement-Seeking\":17,\"Friendliness\":94,\"Gregariousness\":72},\"Overall Score\":54},\"NAME\":\"Sean\"}");
 
         let concat_input = format!("{}{}", TEST_INPUT_1, TEST_INPUT_2);
         let result = big_five_results_text_serializer::new("Sean", &concat_input).unwrap();
-        let json = result.to_h().unwrap();
+        let json = result.to_h().and_then(|r| serde_json::to_string(&r)).unwrap();
         assert_eq!(json, "{\"AGREEABLENESS\":{\"Facets\":{\"Altruism\":80,\"Cooperation\":93,\"Modesty\":95,\"Morality\":89,\"Sympathy\":73,\"Trust\":70},\"Overall Score\":96},\"EXTRAVERSION\":{\"Facets\":{\"Activity Level\":18,\"Assertiveness\":44,\"Cheerfulness\":57,\"Excitement-Seeking\":17,\"Friendliness\":94,\"Gregariousness\":72},\"Overall Score\":54},\"NAME\":\"Sean\"}");
     }
 }
