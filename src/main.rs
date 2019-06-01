@@ -3,10 +3,9 @@ use std::io::BufRead;
 
 use clap::{App, Arg};
 use reqwest::header::CONTENT_TYPE;
-use reqwest::{Response, StatusCode};
+use reqwest::StatusCode;
 use serde_json::json;
 
-use crate::big_five_results_text_serializer::BigFiveResults;
 use crate::big_five_results_text_serializer::BigFiveResultsTextToHash;
 
 mod big_five_results_text_serializer;
@@ -37,7 +36,7 @@ impl BigFiveResultsPoster<'_> {
                     .header(CONTENT_TYPE, "application/json")
                     .body(json_body)
                     .send()
-                    .map_err(|err| BigFiveResultsPosterError::PostError("Failed to perform POST"))?;
+                    .map_err(|_err| BigFiveResultsPosterError::PostError("Failed to perform POST"))?;
 
                 match response.status() {
                     StatusCode::CREATED => Ok((201, response.text().unwrap_or(String::new()))),

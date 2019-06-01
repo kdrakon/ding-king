@@ -1,10 +1,8 @@
 use std::collections::HashMap;
 
 use regex::{Captures, Regex};
-use serde::ser::SerializeMap;
-use serde::{Serialize, Serializer};
-use serde_json::json;
-use serde_json::{Map, Value};
+use serde::Serializer;
+use serde_json::{json, Map, Value};
 
 #[derive(Debug)]
 pub enum BigFiveError<'a> {
