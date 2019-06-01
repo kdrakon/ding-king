@@ -1,8 +1,13 @@
-use crate::big_five_results_text_serializer::BigFiveResults;
-use crate::big_five_results_text_serializer::BigFiveResultsTextToHash;
+use std::io;
+use std::io::BufRead;
+
+use clap::{App, Arg};
 use reqwest::header::CONTENT_TYPE;
 use reqwest::{Response, StatusCode};
 use serde_json::json;
+
+use crate::big_five_results_text_serializer::BigFiveResults;
+use crate::big_five_results_text_serializer::BigFiveResultsTextToHash;
 
 mod big_five_results_text_serializer;
 
@@ -11,6 +16,7 @@ struct BigFiveResultsPoster<'a> {
     big_five_results_hash: serde_json::Value,
 }
 
+#[derive(Debug)]
 enum BigFiveResultsPosterError<'a> {
     PostError(&'a str),
     PostResponseError(u16, String),
@@ -43,4 +49,41 @@ impl BigFiveResultsPoster<'_> {
     }
 }
 
-fn main() {}
+fn main() {
+    let arg_matches = App::new("ding-king")
+        .arg(Arg::with_name("name").long("name").value_name("NAME").required(true))
+        .arg(Arg::with_name("email").long("email").value_name("EMAIL").required(true))
+        .arg(Arg::with_name("post_url").long("url").value_name("POST_URL").required(true))
+        .get_matches();
+
+    let stdin = io::stdin();
+    let lines = stdin
+        .lock()
+        .lines()
+        .map(|line| {
+            let line = line.unwrap();
+            String::from(line.trim())
+        })
+        .collect::<Vec<_>>();
+
+    if !lines.is_empty() {
+        let name = arg_matches.value_of("name").unwrap();
+        let email = arg_matches.value_of("email").unwrap();
+        let post_url = arg_matches.value_of("post_url").unwrap();
+        let file = lines.join("\n");
+
+        match big_five_results_text_serializer::new(name, &file) {
+            Err(err) => eprintln!("{:?}", err),
+            Ok(results) => match results.to_h() {
+                Err(err) => eprintln!("{:?}", err),
+                Ok(big_five_results_hash) => {
+                    let request = BigFiveResultsPoster { email, big_five_results_hash };
+                    match request.post(post_url) {
+                        Err(err) => eprintln!("{:?}", err),
+                        Ok(post_result) => println!("{:?}", post_result),
+                    }
+                }
+            },
+        }
+    }
+}
