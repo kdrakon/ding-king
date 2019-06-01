@@ -24,8 +24,8 @@ pub struct BigFiveResult<'a> {
     facets: HashMap<&'a str, u8>,
 }
 
-const RESULT_HEADER_REGEX: &str = r"([A-Z-]+?\.+\d+\n)";
-const SCORE_REGEX: &str = r"([\w\s-]+)\.+(\d+)";
+const RESULT_HEADER_REGEX: &str = r"([A-Z\- ]+?\.+\d+\n)";
+const SCORE_REGEX: &str = r"([\w\- ]+)\.+(\d+)";
 
 pub fn new<'a>(name: &'a str, input: &'a str) -> Result<BigFiveResults<'a>, BigFiveError<'a>> {
     let header_regex = Regex::new(RESULT_HEADER_REGEX).map_err(|_| BigFiveError::SimpleError("Could not compile Regex"))?;
